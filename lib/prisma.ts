@@ -1,21 +1,45 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const envConfig = readFileSync(resolve(__dirname, "..", ".env"), "utf-8");
-const dbUrlMatch = envConfig.match(/DATABASE_URL=(.*)/);
-const connectionString = dbUrlMatch?.[1];
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set in .env");
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+const getPrismaClient = (): PrismaClient => {
+  const existing = globalForPrisma.prisma
+  if (existing) return existing
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    throw new Error(
+      'DATABASE_URL is not set. Set it via environment variables (e.g., Railway env vars).',
+    )
+  }
+
+  const pool = new Pool({ connectionString: databaseUrl })
+  const adapter = new PrismaPg(pool)
+
+  const client = new PrismaClient({ adapter })
+  globalForPrisma.prisma = client
+  return client
+}
+
+const prisma = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      const client = getPrismaClient()
+      const clientRecord = client as unknown as Record<PropertyKey, unknown>
+      const value = clientRecord[prop]
+
+      if (typeof value === 'function') {
+        return (value as (...args: unknown[]) => unknown).bind(client)
+      }
+
+      return value
+    },
+  },
+) as unknown as PrismaClient
+
+export { prisma }

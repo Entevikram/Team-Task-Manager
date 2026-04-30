@@ -3,8 +3,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
-// Connection string from .env - postgresql://postgres:fhgofKHbHsyMWujHEPvEndFqyGEtxDSV@switchyard.proxy.rlwy.net:20496/railway
-const connectionString = "postgresql://postgres:fhgofKHbHsyMWujHEPvEndFqyGEtxDSV@switchyard.proxy.rlwy.net:20496/railway";
+// Use DATABASE_URL from environment
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });

@@ -30,10 +30,7 @@ export async function GET(req: Request) {
     inProgressTasks: allTasks.filter((task) => task.status === "IN_PROGRESS").length,
     doneTasks: allTasks.filter((task) => task.status === "DONE").length,
     overdueTasks: allTasks.filter(
-      (task) =>
-        task.dueDate &&
-        new Date(task.dueDate) < today &&
-        task.status !== "DONE"
+      (task) => task.dueDate && new Date(task.dueDate) < today && task.status !== "DONE",
     ).length,
   };
 
