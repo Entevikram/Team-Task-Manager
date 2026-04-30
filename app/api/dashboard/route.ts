@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     },
   });
 
-  const allTasks = projects.flatMap((project) => project.tasks);
+  const allTasks = projects.flatMap((project: typeof projects[number]) => project.tasks);
   const metrics = {
     totalProjects: projects.length,
     totalTasks: allTasks.length,
