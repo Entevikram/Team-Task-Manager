@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #f7f7fb;
+  color: #151515;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
