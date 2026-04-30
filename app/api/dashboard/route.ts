@@ -20,15 +20,16 @@ export async function GET(req: Request) {
     },
   });
 
-  const allTasks = projects.flatMap((project: typeof projects[number]) => project.tasks);
+  type Task = typeof projects[number]["tasks"][number];
+  const allTasks: Task[] = projects.flatMap((project: typeof projects[number]) => project.tasks);
   const metrics = {
     totalProjects: projects.length,
     totalTasks: allTasks.length,
-    todoTasks: allTasks.filter((task) => task.status === "TODO").length,
-    inProgressTasks: allTasks.filter((task) => task.status === "IN_PROGRESS").length,
-    doneTasks: allTasks.filter((task) => task.status === "DONE").length,
+    todoTasks: allTasks.filter((task: Task) => task.status === "TODO").length,
+    inProgressTasks: allTasks.filter((task: Task) => task.status === "IN_PROGRESS").length,
+    doneTasks: allTasks.filter((task: Task) => task.status === "DONE").length,
     overdueTasks: allTasks.filter(
-      (task) => task.dueDate && task.dueDate < today && task.status !== "DONE"
+      (task: Task) => task.dueDate && task.dueDate < today && task.status !== "DONE"
     ).length,
   };
 
